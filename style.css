@@ -1,307 +1,1034 @@
 /* =====================================================================
-   lang.js : ข้อความทั้งหมดของเว็บ 2 ภาษา (th = ไทย, en = English)
-
-   วิธีทำงาน
-   - ใน index.html แต่ละข้อความจะมี data-i18n="ชื่อคีย์"
-   - เมื่อเปลี่ยนภาษา script.js จะหาคีย์นั้นในไฟล์นี้ แล้วแทนข้อความให้อัตโนมัติ
-
-   วิธีแก้ข้อความ: หาคีย์ที่ต้องการ แล้วแก้ค่าทั้งฝั่ง th และ en ให้ตรงกัน
-   วิธีเพิ่มข้อความใหม่: ตั้งคีย์ใหม่ใส่ทั้งสองภาษา แล้วใส่ data-i18n ใน HTML
+   style.css : ไฟล์ควบคุมหน้าตาทั้งหมดของ portfolio
+   สารบัญ
+   1. ตัวแปรสี (ธีม Light / Dark)  <- แก้สี/ฟอนต์ได้ที่นี่ที่เดียว
+   2. ค่าเริ่มต้นทั่วไป
+   3. เอฟเฟกต์พื้นหลัง
+   4. Navbar
+   5. Hero
+   6. ส่วนทั่วไป (Section)
+   7. About / Skills / Projects / Contact
+   8. Footer
+   9. แอนิเมชัน (Reveal, Tilt)
+   10. Responsive (มือถือ / แท็บเล็ต)
    ===================================================================== */
 
-// ตัวช่วยจัดแถวคำสั่งใน terminal ให้คอลัมน์ตรงกัน (ชื่อคำสั่ง 14 ตัวอักษร แล้วตามด้วยคำอธิบาย)
-// ตั้งความกว้างไม่เกินนี้เพื่อให้บนมือถือบรรทัดไม่ล้นและไม่ถูกตัดขึ้นบรรทัดใหม่
-const pad = (cmd, desc) => "  " + cmd.padEnd(14) + desc;
 
-const I18N = {
-  /* ------------------------- ภาษาไทย ------------------------- */
-  th: {
-    "meta.title": "สิทธา สัจจหทยาศรม | Developer Portfolio",
-    "lang.title": "Switch to English",
+/* ---------- 1. ตัวแปรสี ----------
+   สีทั้งเว็บขับด้วยตัวแปร --night ตัวเดียว: 0 = ธีมสว่าง (กลางวัน), 1 = ธีมมืด (กลางคืน)
+   ตอนสลับธีม --night จะค่อยๆ วิ่งจาก 0 ไป 1 (หรือกลับ) ภายใน --theme-dur แล้วทุกสีผสมกันตามไปเอง
+   จึงเปลี่ยนแบบนุ่มๆ ทั้งหน้าพร้อมกัน
 
-    // เมนูด้านบน
-    "nav.about": "เกี่ยวกับผม",
-    "nav.skills": "ทักษะ",
-    "nav.projects": "ผลงาน",
-    "nav.certs": "เกียรติบัตร",
-    "nav.contact": "ติดต่อ",
+   วิธีแก้สี: color-mix(in srgb, [สีกลางคืน] calc(var(--night) * 100%), [สีกลางวัน])
+   ให้แก้ค่าสองตัวนี้ ตัวแรกคือสีตอนมืด ตัวหลังคือสีตอนสว่าง
+   วิธีปรับความเร็ว: แก้ --theme-dur (เช่น 1.5s เร็วขึ้น, 4s ช้าลง) */
 
-    // ปุ่มสลับธีม
-    "theme.auto": "อัตโนมัติ",
-    "theme.light": "สว่าง",
-    "theme.dark": "มืด",
+/* ลงทะเบียนตัวแปรเป็น "ตัวเลข" เพื่อให้เบราว์เซอร์ค่อยๆ ไล่ค่าได้ (เบราว์เซอร์เก่ามากที่ไม่รองรับ จะสลับธีมได้เหมือนเดิมแต่เปลี่ยนทันที) */
+@property --night { syntax: "<number>"; inherits: true; initial-value: 0; }
 
-    // หน้าแรก
-    // คำทักทายตามเวลาไทย (เช้า 05-11, บ่าย 12-16, เย็น 17-20, นอกนั้นดึก)
-    "greet.morning": "☀️ สวัสดีตอนเช้าครับ ผมคือ",
-    "greet.afternoon": "🌤️ สวัสดีตอนบ่ายครับ ผมคือ",
-    "greet.evening": "🌆 สวัสดีตอนเย็นครับ ผมคือ",
-    "greet.night": "🌙 ดึกแล้วนะครับ สวัสดีครับ ผมคือ",
-    "hero.name": "สิทธา",
-    "hero.fullname": "สิทธา สัจจหทยาศรม",
-    "hero.desc": "นักศึกษาวิศวกรรมคอมพิวเตอร์ที่ชอบสร้างสิ่งต่างๆ ด้วยโค้ด ตั้งแต่หน้าเว็บไปจนถึงเครื่องมือที่ใช้ AI",
-    "hero.btnProjects": "ดูผลงาน",
-    "hero.btnContact": "ติดต่อผม",
-    "hero.btnResume": "ดาวน์โหลดเรซูเม่",
-    "contact.resume": "เรซูเม่ (PDF)",
-    "contact.resumeBtn": "ดาวน์โหลด",
-    "form.title": "ส่งข้อความถึงผม",
-    "form.name": "ชื่อของคุณ",
-    "form.email": "อีเมลของคุณ",
-    "form.message": "ข้อความ",
-    "form.send": "ส่งข้อความ",
-    "form.sending": "กำลังส่ง...",
-    "form.ok": "ส่งข้อความแล้ว ขอบคุณครับ ผมจะตอบกลับโดยเร็วที่สุด",
-    "form.invalid": "กรุณากรอกชื่อ อีเมลที่ถูกต้อง และข้อความ",
-    "form.fail": "ส่งไม่สำเร็จ ลองใหม่อีกครั้ง หรืออีเมลถึงผมโดยตรง",
-    "form.mailto": "กำลังเปิดแอปอีเมลของคุณ...",
-    // ข้อความที่พิมพ์วนที่หัวเว็บ
-    roles: [
-      "Developer",
-      "นักศึกษาวิศวกรรมคอมพิวเตอร์",
-      "Python & C/C++ Coder",
-      "AI API Explorer",
-    ],
+:root {
+  --theme-dur: 2.4s;                                  /* ระยะเวลาสลับธีม */
+  --theme-ease: cubic-bezier(0.5, 0, 0.3, 1);         /* จังหวะ: ช้า-เร็ว-ช้า */
+  --night: 0;
+  transition: --night var(--theme-dur) var(--theme-ease);
+}
+:root[data-theme="dark"] { --night: 1; }              /* ธีมมืด: ปลายทางของ --night */
 
-    // เกี่ยวกับผม
-    "about.title": "เกี่ยวกับผม",
-    "about.p1": "ผมเป็นนักศึกษาวิศวกรรมคอมพิวเตอร์ ชั้นปีที่ 4 มหาวิทยาลัยราชภัฏพิบูลสงคราม ชอบเปลี่ยนไอเดียให้เป็นซอฟต์แวร์ที่ใช้งานได้จริง ใช้ภาษาโปรแกรมได้หลายภาษา ออกแบบหน้าจอด้วย Figma และเชื่อมต่อ AI API เพื่อเพิ่มความสามารถอัจฉริยะให้โปรเจ็กต์",
-    "about.p2": "ผมชอบหน้าตาที่สะอาดเรียบง่าย ชอบแก้ปัญหาทีละขั้น และเรียนรู้เครื่องมือใหม่ๆ ได้เร็ว",
-    "stat.langs": "ภาษาโปรแกรม",
-    "stat.apis": "AI / Data API ที่เคยใช้",
-    "stat.projects": "โปรเจ็กต์",
-    "stat.projectsSoon": "โปรเจ็กต์ (เร็วๆ นี้)",
+:root {
+  --bg: color-mix(in srgb, #0b0d1a calc(var(--night) * 100%), #f6f7fb);              /* สีพื้นหลังหลัก */
+  --bg-soft: color-mix(in srgb, #12152a calc(var(--night) * 100%), #ffffff);         /* สีพื้นหลังรอง */
+  --card: color-mix(in srgb, rgba(24, 28, 54, 0.6) calc(var(--night) * 100%), rgba(255, 255, 255, 0.7));   /* สีการ์ด (โปร่งแสงนิดๆ) */
+  --card-border: color-mix(in srgb, rgba(255, 255, 255, 0.08) calc(var(--night) * 100%), rgba(20, 24, 60, 0.08));
+  --text: color-mix(in srgb, #eceefb calc(var(--night) * 100%), #171a2e);            /* สีตัวอักษรหลัก */
+  --text-soft: color-mix(in srgb, #9aa0c3 calc(var(--night) * 100%), #565b78);       /* สีตัวอักษรรอง */
+  --accent: color-mix(in srgb, #8b8bff calc(var(--night) * 100%), #5b5bf0);          /* สีหลักของเว็บ (ม่วงน้ำเงิน) */
+  --accent-2: color-mix(in srgb, #2dd4bf calc(var(--night) * 100%), #14b8a6);        /* สีเสริม (เขียวมิ้นต์) */
+  --accent-3: color-mix(in srgb, #f9a8d4 calc(var(--night) * 100%), #f472b6);        /* สีเสริมที่ 3 (ชมพู) */
+  --shadow-color: color-mix(in srgb, rgba(0, 0, 0, 0.45) calc(var(--night) * 100%), rgba(60, 60, 140, 0.12));
+  --shadow: 0 10px 40px var(--shadow-color);
+  --blob-opacity: calc(0.45 - 0.15 * var(--night));  /* ความเข้มของก้อนสีพื้นหลัง */
+}
 
-    // การศึกษา
-    "edu.label": "การศึกษา",
-    "edu.uni": "มหาวิทยาลัยราชภัฏพิบูลสงคราม",
-    "edu.faculty": "คณะวิศวกรรมศาสตร์และเทคโนโลยีอุตสาหกรรม",
-    "edu.major": "สาขาวิศวกรรมคอมพิวเตอร์ · นักศึกษาชั้นปีที่ 4",
+:root {
+  --font-head: "Space Grotesk", "Prompt", sans-serif;   /* ฟอนต์หัวข้อ */
+  --font-body: "Inter", "Prompt", sans-serif;           /* ฟอนต์เนื้อหา */
+  --radius: 20px;                                       /* ความโค้งของมุมการ์ด */
+  --nav-h: 70px;                                        /* ความสูง navbar */
+}
 
-    // ทักษะ
-    "skills.title": "ทักษะ",
-    "skills.prog": "💻 การเขียนโปรแกรม",
-    "skills.web": "🌐 เว็บ",
-    "skills.ai": "🤖 AI และ API",
-    "skills.tools": "🛠️ เครื่องมือและการออกแบบ",
 
-    // ผลงาน
-    "projects.title": "ผลงาน",
-    "song.desc": "เว็บแอปสำหรับค้นหาเพลง ค้นจากชาร์ตและแนวเพลง หรือพิมพ์บรรยายเพลงด้วยคำพูดของตัวเอง (ไทยหรืออังกฤษ) แล้วให้โมเดล AI หลายตัวช่วยเสนอเพลง โดยแต่ละเพลงถูกตรวจกับแคตตาล็อก iTunes และนำผลมาเทียบกันแบบเคียงข้างกัน",
-    "ph.projTitle": "ชื่อโปรเจ็กต์",
-    "ph.projDesc": "คำอธิบายโปรเจ็กต์สั้นๆ ว่าทำอะไร แก้ปัญหาอะไร",
+/* ---------- 2. ค่าเริ่มต้นทั่วไป ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    // เกียรติบัตร
-    "certs.title": "เกียรติบัตร",
-    "cert.verify": "ตรวจสอบออนไลน์ ↗",
-    "cert.phName": "ชื่อเกียรติบัตร",
-    "cert.phIssuer": "ผู้ออก · หน่วยงาน",
-    "cert.phDate": "เดือน ปี",
-    "uxui.title": "การออกแบบประสบการณ์ผู้ใช้และส่วนติดต่อผู้ใช้ (User Experience and User Interface Design)",
-    "uxui.issuer": "กรมพัฒนาฝีมือแรงงาน กระทรวงแรงงาน ร่วมกับ มูลนิธิเพื่อการพัฒนาดิจิทัล และสมาคมอุตสาหกรรมซอฟต์แวร์ไทย",
-    "uxui.date": "25 มีนาคม พ.ศ. 2568",
-    "uxui.desc": "ผ่านการฝึกทักษะออนไลน์ · จำนวนชั่วโมงการฝึกอบรม 8 ชั่วโมง 30 นาที",
-    "py.title": "Python Essentials 1",
-    "py.issuer": "Cisco Networking Academy · ร่วมกับ OpenEDG Python Institute",
-    "py.date": "ออกเมื่อ 10 ธันวาคม ค.ศ. 2025",
-    "py.desc": "Statement of Achievement · ระดับนักเรียน (student level credential)",
-    "py.details": "หัวข้อที่ผู้สำเร็จการศึกษาได้เรียน (ตามข้อความในเกียรติบัตร)",
-    "sk.title": "ช่างซ่อมไมโครคอมพิวเตอร์ ระดับ 1",
-    "sk.issuer": "ศูนย์ทดสอบมาตรฐานฝีมือแรงงาน มหาวิทยาลัยราชภัฏพิบูลสงคราม · ได้รับอนุญาตจากกรมพัฒนาฝีมือแรงงาน กระทรวงแรงงาน",
-    "sk.date": "ให้ไว้ ณ วันที่ 26 ตุลาคม พ.ศ. 2569",
-    "sk.desc": "หนังสือรับรองผู้ผ่านการทดสอบมาตรฐานฝีมือแรงงานแห่งชาติ เลขที่ มรพส.0083/2569 · สาขาช่างไฟฟ้าและอิเล็กทรอนิกส์",
-    "sk.details": "สมรรถนะและคะแนน (ตามข้อความในหนังสือรับรอง)",
+html {
+  scroll-behavior: smooth;                 /* กดเมนูแล้วเลื่อนนุ่มๆ */
+  scroll-padding-top: var(--nav-h);        /* กันหัวข้อโดน navbar บัง */
+}
 
-    // ติดต่อ
-    "contact.title": "ติดต่อ",
-    "contact.lead": "สนใจร่วมงานหรืออยากทักทายกัน ติดต่อมาได้ตลอดครับ",
-    "contact.email": "อีเมล",
-    "contact.phone": "โทรศัพท์",
-    "contact.github": "GitHub",
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
 
-    // ท้ายเว็บ
-    "footer.text": "สิทธา สัจจหทยาศรม · สร้างด้วย HTML, CSS และ JavaScript",
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+section { position: relative; }
 
-    // ปุ่มคัดลอกอีเมล + ข้อความแจ้งเตือน (toast)
-    "copy.title": "คัดลอกอีเมล",
-    "toast.copied": "คัดลอกอีเมลแล้ว ✓",
-    "toast.failed": "คัดลอกไม่สำเร็จ ลองคัดลอกเองนะครับ",
 
-    // นักพัฒนานั่งโต๊ะ: คำพูดตอนกด (กดสลับไปมาระหว่าง say1 กับ say2) / คำใบ้ / คำอ่านสำหรับโปรแกรมช่วยอ่านหน้าจอ
-    "dev.say1": "หากสนใจผมติดต่อได้เลยนะครับ",
-    "dev.say2": "ผมอยากทำงานร่วมกับคุณนะครับ",
-    "dev.hint": "👆 ลองกดที่ผมดูสิ",
-    "dev.aria": "นักพัฒนากำลังเขียนโค้ดที่โต๊ะ กดเพื่อฟังข้อความ",
+/* ---------- 3. เอฟเฟกต์พื้นหลัง ---------- */
 
-    // Terminal ซ่อน (กดปุ่ม ` หรือปุ่ม >_ มุมขวาล่าง)
-    "term.fab": "เปิด Terminal (กดปุ่ม ` ก็ได้)",
-    "term.close": "ปิด",
-    "term.welcome": "ยินดีต้อนรับสู่ terminal ของสิทธา 👋\nพิมพ์ help เพื่อดูคำสั่งทั้งหมด · กด Esc เพื่อปิด",
-    "term.help": [
-      "คำสั่งที่ใช้ได้:",
-      pad("about", "แนะนำตัว"),
-      pad("edu", "การศึกษา"),
-      pad("skills", "ทักษะ"),
-      pad("projects", "ผลงาน"),
-      pad("certs", "เกียรติบัตร"),
-      pad("contact", "ช่องทางติดต่อ"),
-      pad("github", "เปิด GitHub"),
-      pad("demo", "เปิดเดโม Song Finder"),
-      pad("theme <mode>", "auto | light | dark"),
-      pad("lang <th|en>", "เปลี่ยนภาษา"),
-      pad("clear", "ล้างหน้าจอ"),
-      pad("exit", "ปิด terminal"),
-      "",
-      "เคล็ดลับ: กด Tab เพื่อเติมคำสั่ง และ ↑ ↓ เพื่อย้อนดูคำสั่งเก่า",
-    ].join("\n"),
-    "term.unknown": "ไม่รู้จักคำสั่ง: {cmd} · พิมพ์ help เพื่อดูคำสั่งที่ใช้ได้",
-    "term.none": "(ยังไม่มีรายการ)",
-    "term.opening": "กำลังเปิด {v} ...",
-    "term.themeSet": "เปลี่ยนธีมเป็น {v} แล้ว",
-    "term.usageTheme": "วิธีใช้: theme auto | light | dark",
-    "term.langSet": "เปลี่ยนภาษาเป็น {v} แล้ว",
-    "term.usageLang": "วิธีใช้: lang th | en",
-    "term.hire": "[sudo] ได้รับอนุมัติ ✓\nส่งคำเชิญสัมภาษณ์มาที่ sittha.forwork@gmail.com ได้เลยครับ 😄",
-    "term.sudoDenied": "guest ไม่ได้อยู่ในไฟล์ sudoers · เหตุการณ์นี้จะถูกรายงาน 😄",
-  },
+/* แถบ progress บนสุด: ความกว้างเปลี่ยนตามการเลื่อน (script.js) */
+.scroll-progress {
+  position: fixed; top: 0; left: 0;
+  height: 3px; width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+  z-index: 200;
+}
 
-  /* ------------------------- English ------------------------- */
-  en: {
-    "meta.title": "Sittha Sajjahathayasom | Developer Portfolio",
-    "lang.title": "เปลี่ยนเป็นภาษาไทย",
+/* ก้อนสีฟุ้งลอยอยู่หลังเว็บ */
+.bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);                /* ทำให้ขอบฟุ้ง */
+  opacity: var(--blob-opacity);
+  animation: float 18s ease-in-out infinite alternate;
+}
+.blob-1 { width: 480px; height: 480px; background: var(--accent);   top: -120px; left: -100px; }
+.blob-2 { width: 420px; height: 420px; background: var(--accent-2); bottom: -100px; right: -80px; animation-delay: -6s; }
+.blob-3 { width: 320px; height: 320px; background: var(--accent-3); top: 45%; left: 55%; animation-delay: -12s; }
 
-    "nav.about": "About",
-    "nav.skills": "Skills",
-    "nav.projects": "Projects",
-    "nav.certs": "Certificates",
-    "nav.contact": "Contact",
+@keyframes float {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.15); }
+}
 
-    "theme.auto": "Auto",
-    "theme.light": "Light",
-    "theme.dark": "Dark",
+/* วงแสงที่ตามเมาส์ */
+.cursor-glow {
+  position: fixed; top: 0; left: 0;
+  width: 320px; height: 320px;
+  margin: -160px 0 0 -160px;          /* จัดให้จุดกึ่งกลางตรงกับเมาส์ */
+  background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
+  opacity: 0.12;
+  pointer-events: none;               /* ไม่ขวางการคลิก */
+  z-index: -1;
+  transition: opacity 0.3s;
+}
 
-    // Greeting by Thai time (morning 05-11, afternoon 12-16, evening 17-20, otherwise night)
-    "greet.morning": "☀️ Good morning, I'm",
-    "greet.afternoon": "🌤️ Good afternoon, I'm",
-    "greet.evening": "🌆 Good evening, I'm",
-    "greet.night": "🌙 Hey, night owl! I'm",
-    "hero.name": "Sittha",
-    "hero.fullname": "Sittha Sajjahathayasom",
-    "hero.desc": "Computer Engineering student who loves building things with code, from web interfaces to AI-powered tools.",
-    "hero.btnProjects": "View Projects",
-    "hero.btnContact": "Contact Me",
-    "hero.btnResume": "Download Résumé",
-    "contact.resume": "Résumé (PDF)",
-    "contact.resumeBtn": "Download",
-    "form.title": "Send me a message",
-    "form.name": "Your name",
-    "form.email": "Your email",
-    "form.message": "Message",
-    "form.send": "Send message",
-    "form.sending": "Sending...",
-    "form.ok": "Message sent, thank you! I'll reply as soon as I can.",
-    "form.invalid": "Please enter your name, a valid email and a message.",
-    "form.fail": "Couldn't send. Please try again or email me directly.",
-    "form.mailto": "Opening your email app...",
-    roles: [
-      "Developer",
-      "Computer Engineering Student",
-      "Python & C/C++ Coder",
-      "AI API Explorer",
-    ],
 
-    "about.title": "About Me",
-    "about.p1": "I'm a 4th-year Computer Engineering student at Rajabhat Phibulsongkram University who enjoys turning ideas into working software. I work with several programming languages, design interfaces in Figma, and connect to modern AI APIs to build smart features into my projects.",
-    "about.p2": "I like clean interfaces, solving problems step by step, and learning new tools quickly.",
-    "stat.langs": "Programming languages",
-    "stat.apis": "AI / Data APIs used",
-    "stat.projects": "Projects",
-    "stat.projectsSoon": "Projects (coming soon)",
+/* ---------- 4. Navbar ---------- */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(20px, 5vw, 64px);
+  background: var(--card);
+  backdrop-filter: blur(14px);        /* เอฟเฟกต์กระจกฝ้า */
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--card-border);
+  z-index: 100;
+}
 
-    "edu.label": "Education",
-    "edu.uni": "Rajabhat Phibulsongkram University",
-    "edu.faculty": "Faculty of Engineering and Industrial Technology",
-    "edu.major": "Computer Engineering · 4th-year student",
+.logo { font-family: var(--font-head); font-weight: 700; font-size: 1.35rem; }
+.logo span { color: var(--accent); }
 
-    "skills.title": "Skills",
-    "skills.prog": "💻 Programming",
-    "skills.web": "🌐 Web",
-    "skills.ai": "🤖 AI & APIs",
-    "skills.tools": "🛠️ Tools & Design",
+.nav-links { display: flex; gap: 32px; }
+.nav-links a {
+  position: relative;
+  font-weight: 500; font-size: 0.95rem;
+  color: var(--text-soft);
+  transition: color 0.3s;
+}
+/* เส้นขีดใต้เมนูที่ขยายตอนเอาเมาส์ไปชี้ */
+.nav-links a::after {
+  content: ""; position: absolute; left: 0; bottom: -4px;
+  width: 0; height: 2px;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+.nav-links a:hover,
+.nav-links a.active { color: var(--text); }
+.nav-links a:hover::after,
+.nav-links a.active::after { width: 100%; }
 
-    "projects.title": "Projects",
-    "song.desc": "Web app for discovering songs. Search charts and genres, or describe a song in your own words (Thai or English) and let several AI models suggest matches, each verified against the iTunes catalog and compared side by side.",
-    "ph.projTitle": "Project Title",
-    "ph.projDesc": "A short description of what the project does and the problem it solves.",
+.nav-actions { display: flex; align-items: center; gap: 12px; }
 
-    "certs.title": "Certificates",
-    "cert.verify": "Verify Online ↗",
-    "cert.phName": "Certificate Name",
-    "cert.phIssuer": "Issued by · Organization",
-    "cert.phDate": "Month Year",
-    "uxui.title": "User Experience and User Interface Design",
-    "uxui.issuer": "Department of Skill Development, Ministry of Labour, in collaboration with The Digital Development Foundation and The Association of Thai Software Industry",
-    "uxui.date": "25 March 2025 (B.E. 2568)",
-    "uxui.desc": "Completed an online skills training course · 8 hours 30 minutes of training",
-    "py.title": "Python Essentials 1",
-    "py.issuer": "Cisco Networking Academy · in collaboration with OpenEDG Python Institute",
-    "py.date": "Issued on 10 December 2025",
-    "py.desc": "Statement of Achievement · student level credential",
-    "py.details": "What the graduate has studied (as stated on the certificate)",
-    "sk.title": "Microcomputer Repair Technician, Level 1",
-    "sk.issuer": "Pibulsongkram Rajabhat University Skill Standard Testing Center · authorised by the Department of Skill Development, Ministry of Labour",
-    "sk.date": "Given on 26 October 2026 (B.E. 2569)",
-    "sk.desc": "National Skill Standard Assessment Certificate No. มรพส.0083/2569 · Electrical and Electronics Sector",
-    "sk.details": "Competency and score (as stated on the certificate)",
+/* ปุ่มสลับธีม */
+.theme-toggle {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  font: 500 0.85rem var(--font-body);
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.theme-toggle:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 
-    "contact.title": "Contact",
-    "contact.lead": "Interested in working together or just want to say hi? My inbox is always open.",
-    "contact.email": "Email",
-    "contact.phone": "Phone",
-    "contact.github": "GitHub",
+/* ปุ่มแฮมเบอร์เกอร์ (ซ่อนไว้ก่อน จะโชว์บนมือถือ) */
+.menu-btn {
+  display: none;
+  flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 6px;
+}
+.menu-btn span {
+  width: 24px; height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+/* ตอนเมนูเปิด เปลี่ยน 3 ขีดเป็นรูปกากบาท */
+.menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn.open span:nth-child(2) { opacity: 0; }
+.menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-    "footer.text": "Sittha Sajjahathayasom · Built with HTML, CSS & JavaScript",
 
-    // Copy-email button + toast message
-    "copy.title": "Copy email",
-    "toast.copied": "Email copied ✓",
-    "toast.failed": "Copy failed, please copy it manually",
+/* ---------- 5. Hero (หน้าแรก) ---------- */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;   /* ซ้ายข้อความ ขวาการ์ดโค้ด */
+  align-items: center;
+  gap: 48px;
+  padding: calc(var(--nav-h) + 40px) clamp(20px, 7vw, 110px) var(--city-h);   /* ด้านล่างเว้นที่ให้ฉากเมือง */
+}
 
-    // Developer at the desk: speech bubble messages (click alternates say1 / say2), hint, screen-reader label
-    "dev.say1": "If you're interested, feel free to contact me!",
-    "dev.say2": "I'd love to work with you!",
-    "dev.hint": "👆 Try clicking me",
-    "dev.aria": "A developer coding at a desk, click to hear a message",
+.eyebrow { color: var(--accent); font-weight: 600; margin-bottom: 8px; }
 
-    // Hidden terminal (press ` or the >_ button at the bottom right)
-    "term.fab": "Open Terminal (or press `)",
-    "term.close": "Close",
-    "term.welcome": "Welcome to Sittha's terminal 👋\nType help to see all commands · press Esc to close",
-    "term.help": [
-      "Available commands:",
-      pad("about", "who I am"),
-      pad("edu", "education"),
-      pad("skills", "skills"),
-      pad("projects", "projects"),
-      pad("certs", "certificates"),
-      pad("contact", "contact info"),
-      pad("github", "open GitHub"),
-      pad("demo", "open the Song Finder demo"),
-      pad("theme <mode>", "auto | light | dark"),
-      pad("lang <th|en>", "change language"),
-      pad("clear", "clear the screen"),
-      pad("exit", "close the terminal"),
-      "",
-      "Tip: press Tab to autocomplete and ↑ ↓ to browse history",
-    ].join("\n"),
-    "term.unknown": "Command not found: {cmd} · type help for available commands",
-    "term.none": "(nothing here yet)",
-    "term.opening": "Opening {v} ...",
-    "term.themeSet": "Theme set to {v}",
-    "term.usageTheme": "Usage: theme auto | light | dark",
-    "term.langSet": "Language set to {v}",
-    "term.usageLang": "Usage: lang th | en",
-    "term.hire": "[sudo] access granted ✓\nSend the interview invite to sittha.forwork@gmail.com 😄",
-    "term.sudoDenied": "guest is not in the sudoers file. This incident will be reported. 😄",
-  },
-};
+.hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  line-height: 1.05;
+  /* ตัวหนังสือไล่สี */
+  background: linear-gradient(120deg, var(--text) 30%, var(--accent) 70%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-title .dot { color: var(--accent-3); -webkit-text-fill-color: var(--accent-3); }
+
+.hero-role {
+  font-family: var(--font-head);
+  font-size: clamp(1.3rem, 3.2vw, 2rem);
+  font-weight: 500;
+  margin: 12px 0 18px;
+  min-height: 2.6rem;                 /* กันหน้ากระตุกตอนข้อความเปลี่ยนความยาว */
+  color: var(--accent-2);
+}
+/* ชื่อเต็มใต้ชื่อเล่นตัวใหญ่ */
+.hero-fullname {
+  margin-top: 6px;
+  font-family: var(--font-head);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-weight: 500;
+  color: var(--text-soft);
+  letter-spacing: 0.02em;
+}
+
+/* เคอร์เซอร์กะพริบตอนพิมพ์ */
+.caret { animation: blink 1s steps(1) infinite; margin-left: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.hero-desc { max-width: 520px; color: var(--text-soft); font-size: 1.05rem; }
+.hero-buttons { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+
+/* ปุ่มทั่วไป */
+.btn {
+  padding: 13px 28px;
+  font-weight: 600; font-size: 0.95rem;
+  border-radius: 999px;
+  transition: transform 0.25s, box-shadow 0.3s, background 0.3s;
+}
+.btn:hover { transform: translateY(-3px); }
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 24px rgba(91, 91, 240, 0.35);
+}
+.btn-ghost { border: 1.5px solid var(--accent); color: var(--accent); }
+.btn-ghost:hover { background: var(--accent); color: #fff; }
+
+/* ---------- 6. ส่วนทั่วไป ---------- */
+.section { padding: 100px clamp(20px, 7vw, 110px); max-width: 1300px; margin: 0 auto; }
+
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin-bottom: 48px;
+  display: flex; align-items: center; gap: 14px;
+}
+.section-title .num { color: var(--accent); font-size: 0.6em; }   /* เลขหัวข้อ 01. 02. ... */
+/* เส้นยาวต่อท้ายหัวข้อ */
+.section-title::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--card-border), transparent);
+}
+
+/* ชิป/แท็ก ใช้ในหลายส่วน */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chips span {
+  padding: 7px 16px;
+  font-size: 0.88rem; font-weight: 500;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 999px;
+  transition: transform 0.2s, background 0.3s, color 0.3s;
+}
+.chips span:hover { transform: translateY(-3px); background: var(--accent); color: #fff; }
+.chips.small span { padding: 4px 12px; font-size: 0.78rem; }
+
+
+/* ---------- 7. About / Skills / Projects / Contact ---------- */
+
+/* การ์ดสไตล์กระจก ใช้ร่วมกันทุกส่วน */
+.stat, .skill-card, .project-card, .contact-item, .contact-box {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* About */
+.about-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: center; }
+.about-text p { color: var(--text-soft); margin-bottom: 16px; font-size: 1.05rem; }
+.stats { display: grid; gap: 16px; }
+.stat { padding: 22px 26px; display: flex; align-items: center; gap: 20px; }
+.stat strong {
+  font: 700 2.6rem var(--font-head);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  min-width: 56px;
+}
+.stat span { color: var(--text-soft); }
+
+/* การ์ดการศึกษา (ใต้ส่วน About) */
+.edu-card {
+  display: flex; align-items: center; gap: 22px;
+  margin-top: 40px;
+  padding: 26px 30px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.edu-icon {
+  flex-shrink: 0;
+  width: 64px; height: 64px;
+  display: grid; place-items: center;
+  font-size: 2rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 25%, transparent),
+    color-mix(in srgb, var(--accent-2) 25%, transparent));
+}
+.edu-label { color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; }
+.edu-card h3 { font-family: var(--font-head); font-size: 1.25rem; }
+.edu-card p { color: var(--text-soft); font-size: 0.95rem; }
+.edu-major { color: var(--accent-2) !important; font-weight: 600; }
+@media (max-width: 720px) {
+  .edu-card { flex-direction: column; text-align: center; padding: 24px 20px; }
+}
+
+/* Skills */
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.skill-card { padding: 28px; }
+.skill-card h3 { font-family: var(--font-head); margin-bottom: 18px; font-size: 1.2rem; }
+
+/* Projects */
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 28px; }
+.project-card { padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.project-thumb {
+  height: 170px;
+  display: grid; place-items: center;
+  font-size: 3rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 25%, transparent),
+    color-mix(in srgb, var(--accent-2) 25%, transparent));
+}
+/* กรอบที่ใส่รูปจริง: พื้นสีอ่อนเดียวกับรูป (#f4f6fc) ให้ขอบกลืนกัน และตัวหนังสือสีเข้มในรูปอ่านชัดทั้งธีมสว่างและมืด
+   รูปแสดงตามสัดส่วนเดิม ไม่ยืด ไม่ตัดขอบ และไม่ขยายเกินขนาดจริง (กันภาพแตก) */
+.project-thumb.has-img {
+  background: #f4f6fc;
+  padding: 8px;
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+.project-thumb.has-img img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.project-card h3 { font-family: var(--font-head); font-size: 1.25rem; }
+.project-card p { color: var(--text-soft); font-size: 0.95rem; flex: 1; }
+.project-links { display: flex; gap: 18px; margin-top: 4px; }
+.project-links a { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+.project-links a:hover { text-decoration: underline; }
+.project-links a[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+/* การ์ดว่าง (ยังไม่มีผลงาน) ให้ดูจางลงและเส้นประ */
+.project-card.placeholder { border-style: dashed; opacity: 0.85; }
+
+/* Certificates (เกียรติบัตร) */
+.certs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; }
+.cert-card {
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+/* กรอบรูปเกียรติบัตร: สัดส่วนแนวนอน (4:3) ครอบรูปให้พอดี */
+.cert-thumb {
+  aspect-ratio: 4 / 3;
+  display: grid; place-items: center;
+  font-size: 3rem;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent-3) 25%, transparent),
+    color-mix(in srgb, var(--accent) 25%, transparent));
+}
+/* object-fit: contain = แสดงเกียรติบัตรทั้งใบ ไม่ตัดขอบ (รองรับทั้งภาพแนวตั้งและแนวนอน)
+   ถ้าอยากให้ภาพเต็มกรอบแบบตัดขอบ ให้เปลี่ยนเป็น cover */
+.cert-thumb img { width: 100%; height: 100%; object-fit: contain; cursor: zoom-in; transition: transform 0.4s; }
+.cert-thumb img:hover { transform: scale(1.04); }
+.cert-desc { color: var(--text-soft); font-size: 0.88rem; }
+
+/* รายละเอียดที่พับเก็บได้ (แท็ก <details>) */
+.cert-details { margin-top: 8px; font-size: 0.85rem; color: var(--text-soft); }
+.cert-details summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.cert-details ul { margin-top: 10px; padding-left: 18px; list-style: disc; }
+.cert-details li { margin-bottom: 6px; }
+.cert-card h3 { font-family: var(--font-head); font-size: 1.1rem; }
+.cert-issuer { color: var(--text-soft); font-size: 0.92rem; }
+.cert-date { color: var(--accent-2); font-size: 0.82rem; font-weight: 600; }
+.cert-link { color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-top: 6px; }
+.cert-link:hover { text-decoration: underline; }
+.cert-link[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+.cert-card.placeholder { border-style: dashed; opacity: 0.85; }
+
+/* Lightbox: หน้าต่างขยายรูปเกียรติบัตรเต็มจอ */
+.lightbox {
+  position: fixed; inset: 0; z-index: 300;
+  display: grid; place-items: center;
+  padding: 24px;
+  background: rgba(5, 6, 15, 0.85);
+  backdrop-filter: blur(6px);
+  opacity: 0; pointer-events: none;           /* ปิดอยู่: มองไม่เห็นและไม่ขวางการคลิก */
+  transition: opacity 0.3s;
+}
+.lightbox.open { opacity: 1; pointer-events: auto; }
+.lightbox img { max-width: 100%; max-height: 90vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); }
+.lightbox-close {
+  position: absolute; top: 20px; right: 24px;
+  width: 42px; height: 42px;
+  font-size: 1.1rem; color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: none; border-radius: 50%; cursor: pointer;
+}
+.lightbox-close:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* Contact */
+.contact-box { padding: clamp(28px, 5vw, 56px); text-align: center; }
+.contact-lead { max-width: 560px; margin: 0 auto 36px; color: var(--text-soft); font-size: 1.1rem; }
+.contact-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+.contact-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px; text-align: left;
+  transition: border-color 0.3s;
+}
+.contact-item:hover { border-color: var(--accent); }
+.ci-icon { font-size: 1.8rem; }
+.contact-item small { display: block; color: var(--text-soft); font-size: 0.78rem; }
+.contact-item .ci-text { font-weight: 500; font-size: 0.92rem; word-break: break-all; flex: 1; min-width: 0; }
+
+/* ปุ่มคัดลอกอีเมล: วงกลมเล็กลอยที่มุมขวาบนของการ์ดอีเมล (วางแบบลอยเพื่อให้ตัวอีเมลได้พื้นที่เต็ม ไม่โดนตัดกลางคำ) */
+.contact-email { position: relative; }
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  width: 30px; height: 30px;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s, border-color 0.3s;
+}
+.copy-btn:hover { transform: scale(1.12); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); }
+
+
+/* ---------- 8. Footer ---------- */
+.footer {
+  text-align: center; padding: 30px 20px;
+  color: var(--text-soft); font-size: 0.9rem;
+  border-top: 1px solid var(--card-border);
+}
+
+
+/* ---------- 9. แอนิเมชัน ---------- */
+
+/* Scroll reveal: เริ่มต้นซ่อน+เลื่อนลงนิดนึง พอเลื่อนมาถึงจะมีคลาส .visible (script.js) */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* Tilt: การ์ดเอียงตามเมาส์ (ค่า --rx / --ry ถูกตั้งจาก script.js) */
+.tilt {
+  transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.15s ease-out;
+}
+/* เมื่อมีทั้ง reveal และ tilt ให้ reveal ทำงานก่อนแล้วค่อยเอียงได้ */
+.tilt.reveal { transition: opacity 0.8s ease, transform 0.15s ease-out; }
+.tilt.reveal:not(.visible) { transform: translateY(40px); }
+
+
+/* ---------- 9.5 ลูกเล่นเพิ่มเติม: Toast / Terminal / เคอร์เซอร์ ---------- */
+
+/* Toast: ข้อความเด้งขึ้นจากด้านล่างจอแล้วหายเอง (เติมคลาส .show จาก script.js) */
+.toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 500;
+  padding: 12px 24px;
+  font-weight: 600; font-size: 0.92rem;
+  color: var(--bg);
+  background: var(--text);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, 20px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ปุ่มกลม >_ มุมขวาล่าง สำหรับเปิด terminal */
+.terminal-fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 120;
+  width: 48px; height: 48px;
+  font: 700 1rem "Consolas", "Courier New", monospace;
+  color: var(--accent);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s, color 0.3s;
+}
+.terminal-fab:hover { transform: translateY(-3px); background: var(--accent); color: #fff; }
+
+/* พื้นหลังมืดเต็มจอของ terminal (ปิดอยู่จะมองไม่เห็นและโฟกัสด้วยปุ่ม Tab ไม่ได้) */
+.terminal {
+  position: fixed; inset: 0; z-index: 310;
+  display: grid; place-items: center;
+  padding: 20px;
+  background: rgba(5, 6, 15, 0.7);
+  backdrop-filter: blur(6px);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s, visibility 0s 0.25s;   /* ตอนปิด: รอให้จางหายก่อนค่อยซ่อนจริง */
+}
+/* ตอนเปิด: visibility ต้องเปลี่ยนทันที (0s) ไม่งั้นช่องพิมพ์ยังโฟกัสไม่ได้ในเฟรมแรก */
+.terminal.open { opacity: 1; visibility: visible; transition: opacity 0.25s, visibility 0s; }
+body.no-scroll { overflow: hidden; }   /* ตอน terminal เปิด ไม่ให้หน้าเว็บด้านหลังเลื่อน */
+
+/* ตัวหน้าต่าง terminal: ใช้สีมืดตายตัวทั้งธีมสว่างและมืด เพื่อให้ดูเป็น terminal จริง */
+.terminal-window {
+  width: 100%; max-width: 720px;
+  height: min(70vh, 520px);
+  display: flex; flex-direction: column;
+  color: #d6dbff;
+  background: #0b0e1d;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  font: 0.92rem/1.6 "Consolas", "Courier New", "Prompt", monospace;
+  transform: translateY(16px) scale(0.98);
+  transition: transform 0.25s;
+}
+.terminal.open .terminal-window { transform: none; }
+
+.terminal-bar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 12px 16px;
+  color: #8a90b8; font-size: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.terminal-bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.terminal-bar i:nth-child(2) { background: #febc2e; }
+.terminal-bar i:nth-child(3) { background: #28c840; }
+.terminal-bar span { flex: 1; margin-left: 8px; }
+.terminal-bar button { background: none; border: none; color: #8a90b8; font-size: 1rem; cursor: pointer; }
+.terminal-bar button:hover { color: #fff; }
+
+.terminal-output { flex: 1; overflow-y: auto; padding: 16px; white-space: pre-wrap; word-break: break-word; }
+.term-cmd { color: #2dd4bf; }   /* บรรทัดคำสั่งที่ผู้ใช้พิมพ์ */
+
+.terminal-line {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.terminal-line .prompt { color: #2dd4bf; white-space: nowrap; }
+.terminal-line input {
+  flex: 1; min-width: 0;
+  color: #fff; caret-color: #8b8bff;
+  font: inherit;
+  background: none; border: none; outline: none;
+}
+
+/* เคอร์เซอร์กำหนดเอง: ปกติซ่อนไว้ จะแสดงเมื่อ script.js เติมคลาส custom-cursor ให้ body (เฉพาะอุปกรณ์ที่มีเมาส์) */
+.cursor-dot, .cursor-ring {
+  display: none;
+  position: fixed; top: 0; left: 0;
+  width: 0; height: 0;
+  pointer-events: none;
+  z-index: 600;
+}
+.custom-cursor .cursor-dot, .custom-cursor .cursor-ring { display: block; }
+.cursor-dot::before {
+  content: ""; position: absolute;
+  width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border-radius: 50%; background: var(--accent);
+}
+.cursor-ring::before {
+  content: ""; position: absolute;
+  width: 38px; height: 38px; margin: -19px 0 0 -19px;
+  border: 2px solid var(--accent); border-radius: 50%;
+  opacity: 0.55;
+  transition: transform 0.25s, background 0.25s, opacity 0.25s;
+}
+.cursor-ring.hover::before { transform: scale(1.6); opacity: 0.9; background: color-mix(in srgb, var(--accent) 15%, transparent); }   /* ชี้ปุ่ม/ลิงก์ = วงขยาย */
+.cursor-ring.down::before { transform: scale(0.7); }                                                                                /* กดเมาส์ = วงหดลง */
+/* ซ่อนเคอร์เซอร์เดิมของระบบ (ยกเว้นช่องพิมพ์ ที่ยังต้องเห็นเคอร์เซอร์รูปตัว I) */
+.custom-cursor, .custom-cursor a, .custom-cursor button, .custom-cursor summary,
+.custom-cursor label, .custom-cursor .cert-thumb img { cursor: none; }
+.custom-cursor input { cursor: text; }
+
+@media (max-width: 720px) {
+  .terminal { padding: 12px; }
+  .terminal-window { height: 75vh; font-size: 0.82rem; }   /* ลดขนาดตัวอักษรให้บรรทัดคำสั่งพอดีจอมือถือ */
+  .terminal-line input { font-size: 16px; }   /* 16px ขึ้นไป กัน iPhone ซูมหน้าจออัตโนมัติตอนแตะช่องพิมพ์ */
+  .terminal-fab { right: 14px; bottom: 14px; }
+}
+
+
+/* ---------- 9.6 ฉากหลังเมือง (กลางวัน → พลบค่ำ → กลางคืน) + นักพัฒนาพิกเซล ----------
+   ทุกอย่างในฉากขับด้วยตัวแปร --night ตัวเดียว (0 = กลางวัน, 1 = กลางคืน) ที่กำหนดไว้ในส่วนที่ 1
+   ตอนสลับธีม --night จะค่อยๆ วิ่ง 0 -> 1 (หรือย้อนกลับ) ภายใน --theme-dur วินาที
+   ท้องฟ้า ดวงอาทิตย์/พระจันทร์ ดาว ไฟในตึก และแสงโคมไฟ จึงเปลี่ยนไปพร้อมกันอย่างต่อเนื่อง
+   (ถ้าเบราว์เซอร์เก่ามากไม่รองรับ @property ธีมจะยังสลับได้ แต่จะเปลี่ยนทันทีไม่ค่อยๆ เปลี่ยน) */
+
+:root { --city-h: clamp(150px, 26vh, 260px); }   /* ความสูงของฉากเมือง (hero เว้นที่ด้านล่างเท่ากัน) */
+
+/* สีและตัวช่วยคำนวณของฉาก: ค่าซ้ายสุด = กลางคืน/พลบค่ำ ค่าท้ายสุด = กลางวัน (ผสมด้วย color-mix ตาม --night) */
+.hero {
+  --k1: clamp(0, var(--night) * 2, 1);                /* 0 -> 1 ในครึ่งแรก (กลางวัน -> พลบค่ำ) */
+  --k2: clamp(0, (var(--night) - 0.5) * 2, 1);        /* 0 -> 1 ในครึ่งหลัง (พลบค่ำ -> กลางคืน) */
+
+  /* ท้องฟ้า: 3 จังหวะ  กลางวัน(ฟ้าอ่อน) -> พลบค่ำ(ส้ม/ม่วง) -> กลางคืน(น้ำเงินเข้ม) */
+  --sky-top: color-mix(in srgb, rgba(4, 6, 20, 0.82) calc(var(--k2) * 100%), color-mix(in srgb, rgba(96, 70, 170, 0.64) calc(var(--k1) * 100%), rgba(125, 175, 255, 0.34)));
+  --sky-mid: color-mix(in srgb, rgba(25, 22, 80, 0.5) calc(var(--k2) * 100%), color-mix(in srgb, rgba(205, 100, 140, 0.44) calc(var(--k1) * 100%), rgba(190, 205, 255, 0.18)));
+  --sky-hor: color-mix(in srgb, rgba(70, 50, 170, 0.42) calc(var(--k2) * 100%), color-mix(in srgb, rgba(255, 150, 80, 0.58) calc(var(--k1) * 100%), rgba(255, 205, 175, 0.35)));
+  --glow: color-mix(in srgb, rgba(110, 90, 255, 0.34) calc(var(--k2) * 100%), color-mix(in srgb, rgba(255, 120, 70, 0.5) calc(var(--k1) * 100%), rgba(255, 190, 140, 0.4)));
+
+  /* ตึก: เงาม่วงอ่อน -> ม่วงพลบค่ำ -> น้ำเงินเข้ม */
+  --bld-far: color-mix(in srgb, rgba(34, 40, 92, 0.85) calc(var(--k2) * 100%), color-mix(in srgb, rgba(110, 92, 170, 0.5) calc(var(--k1) * 100%), rgba(150, 162, 220, 0.32)));
+  --bld-near: color-mix(in srgb, rgba(16, 19, 48, 0.95) calc(var(--k2) * 100%), color-mix(in srgb, rgba(76, 64, 138, 0.88) calc(var(--k1) * 100%), rgba(104, 116, 192, 0.78)));
+
+  /* หน้าต่าง: ปกติ (กลางวันสะท้อนแสงจางๆ, กลางคืนมืด) และสีไฟตอนเปิด */
+  --win-base: color-mix(in srgb, rgba(255, 255, 255, 0.05) calc(var(--night) * 100%), rgba(255, 255, 255, 0.3));
+  --win-lit: #ffd77a;
+
+  /* ดวงอาทิตย์: เหลือง -> ส้มแดงตอนพลบค่ำ */
+  --sun-mid: color-mix(in srgb, #ff7a45 calc(var(--k1) * 100%), #ffd45e);
+  --sun-edge: color-mix(in srgb, #ff5a3a calc(var(--k1) * 100%), #ffb347);
+  --sun-glow: color-mix(in srgb, rgba(255, 110, 60, 0.5) calc(var(--k1) * 100%), rgba(255, 200, 90, 0.45));
+}
+
+/* ให้เนื้อหาหน้าแรกอยู่เหนือฉากหลังเสมอ */
+.hero-content, .hero-card { position: relative; z-index: 1; }
+.hero-card { display: flex; justify-content: center; }
+
+/* ชั้นท้องฟ้าคลุมทั้ง hero (ตกแต่งอย่างเดียว คลิกทะลุได้) */
+.sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+/* สีท้องฟ้าไล่จากบนลงล่าง ด้านล่างจางหายเข้าพื้นหลังเว็บ ไม่ให้เห็นขอบตัด */
+.sky::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-hor) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+}
+
+/* ดวงอาทิตย์ลับขอบฟ้า (เลื่อนลงแล้วจางหาย) / พระจันทร์ขึ้น (เลื่อนขึ้นแล้วชัดขึ้น) ตามค่า --night */
+.sun, .moon { position: absolute; right: 12%; top: calc(var(--nav-h) + 50px); border-radius: 50%; }
+.sun {
+  width: 84px; height: 84px;
+  background: radial-gradient(circle at 35% 35%, #fff6c9, var(--sun-mid) 60%, var(--sun-edge));
+  box-shadow: 0 0 60px 20px var(--sun-glow);
+  transform: translateY(calc(var(--night) * 62vh));
+  opacity: clamp(0, (1 - var(--night)) * 3, 1);
+}
+.moon {
+  width: 66px; height: 66px;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #dcdcf5 70%);
+  box-shadow: 0 0 50px 14px rgba(160, 160, 255, 0.3);
+  transform: translateY(calc((1 - var(--night)) * 62vh));
+  opacity: clamp(0, (var(--night) - 0.35) * 3, 1);
+}
+.moon::before, .moon::after { content: ""; position: absolute; border-radius: 50%; background: rgba(150, 150, 200, 0.3); }   /* หลุมบนดวงจันทร์ */
+.moon::before { width: 14px; height: 14px; left: 14px; top: 34px; }
+.moon::after { width: 9px; height: 9px; left: 40px; top: 16px; }
+
+/* เมฆลอยผ่านช้าๆ: จางหายตอนค่ำ และอมสีส้มชมพูตอนพลบค่ำ */
+.cloud {
+  position: absolute; left: 0;
+  width: 120px; height: 36px;
+  border-radius: 36px;
+  background: color-mix(in srgb, #ffb89c calc(var(--k1) * 70%), rgba(255, 255, 255, 0.92));
+  opacity: calc(var(--cloud-o, 1) * clamp(0, 1 - var(--night) * 1.5, 1));
+  animation: drift var(--t, 100s) linear infinite;
+  animation-delay: var(--d, 0s);
+}
+.cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+.cloud::before { width: 52px; height: 52px; top: -26px; left: 20px; }
+.cloud::after { width: 40px; height: 40px; top: -18px; left: 62px; }
+.cloud-1 { top: 22%; --t: 110s; --d: -30s; }
+.cloud-2 { top: 36%; --t: 150s; --d: -90s; scale: 0.7; }
+.cloud-3 { top: 14%; --t: 130s; --d: -60s; scale: 0.85; }
+@keyframes drift { from { transform: translateX(-220px); } to { transform: translateX(calc(100vw + 220px)); } }
+
+/* ดาว (สร้างโดย script.js): แต่ละดวงโผล่ตอนมืดถึงระดับของตัวเอง (--sth) จึงทยอยขึ้นทีละดวง แล้วกะพริบ (หดเล็กลงสลับขนาด) */
+.stars { position: absolute; inset: 0 0 35% 0; }
+.star {
+  position: absolute; border-radius: 50%; background: #fff;
+  opacity: calc(var(--o, 0.8) * clamp(0, (var(--night) - var(--sth, 0.4)) * 6, 1));
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes twinkle { 50% { scale: 0.35; } }
+
+/* ดาวตกนานๆ ครั้ง: ห่อด้วย .shoot-wrap เพื่อให้เห็นเฉพาะตอนมืดสนิท */
+.shoot-wrap { position: absolute; inset: 0; opacity: clamp(0, (var(--night) - 0.85) * 7, 1); }
+.shooting-star {
+  position: absolute; top: 18%; left: 28%;
+  width: 90px; height: 2px;
+  background: linear-gradient(90deg, #fff, transparent);
+  opacity: 0;
+  animation: shoot 14s linear infinite 4s;
+}
+@keyframes shoot {
+  0% { opacity: 0; transform: translate(0, 0) rotate(35deg); }
+  2% { opacity: 1; }
+  9% { opacity: 0; transform: translate(260px, 180px) rotate(35deg); }
+  100% { opacity: 0; }
+}
+
+/* เมือง: ฐานตึกจางหายลงด้านล่างเหมือนหมอก ไม่ให้ขอบตัดแข็งๆ */
+.city {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: var(--city-h);
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+}
+/* แสงที่ขอบฟ้า: ส้มพีช -> ส้มแดง -> ม่วงน้ำเงิน เปลี่ยนสีต่อเนื่องตาม --night */
+.city::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--glow), transparent 75%); }
+.city svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.city-far rect { fill: var(--bld-far); }
+.city-near .b { fill: var(--bld-near); }
+
+/* หน้าต่าง: สีไล่จาก "ปกติ" ไป "ไฟเปิด" ตามค่า --night
+   --wl = 1 ถ้าหน้าต่างนี้เปิดไฟตอนกลางคืน (0 = ปิด)   --wt = ระดับความมืดที่ไฟบานนี้จะเริ่มติด (แต่ละบานต่างกัน จึงติดทยอยกัน)
+   ไฟจะติดเต็มภายในช่วง --night เปลี่ยนไป 1/8 และตอนกลับเป็นกลางวันก็ดับทยอยกันแบบเดียวกัน */
+.win {
+  fill: color-mix(in srgb, var(--win-lit) calc(var(--wl, 0) * var(--flick, 1) * clamp(0, (var(--night) - var(--wt, 1)) * 8, 1) * 100%), var(--win-base));
+}
+.win.c2 { --win-lit: #ffb866; }
+.win.c3 { --win-lit: #fff0b8; }
+/* บางบานกะพริบเป็นจังหวะนานๆ ครั้ง เหมือนมีคนเปิด-ปิดไฟ (--flick คือตัวคูณความสว่าง) */
+@property --flick { syntax: "<number>"; inherits: false; initial-value: 1; }
+.win.tw { animation: flick var(--dur, 7s) steps(1) infinite; animation-delay: var(--delay, 0s); }
+@keyframes flick { 0% { --flick: 1; } 60% { --flick: 0.15; } 66% { --flick: 1; } }
+/* ไฟแดงบนยอดตึก: ค่อยๆ โผล่ตอนใกล้มืดสนิท แล้วกะพริบ */
+.beacon {
+  fill: color-mix(in srgb, #ff5a5a calc(clamp(0, (var(--night) - 0.75) * 4, 1) * 100%), transparent);
+  animation: beacon 2.2s ease-in-out infinite;
+}
+@keyframes beacon { 50% { opacity: 0.15; } }
+
+/* ---------- นักพัฒนาพิกเซลอาร์ต (นั่งเขียนโค้ดที่โต๊ะ) ----------
+   สไปรต์วาดบนตาราง 96x86 พิกเซล (1 พิกเซลศิลป์ = --px พิกเซลจริงบนจอ)
+   ใช้ตัวเลขจำนวนเต็มเสมอ (2, 3, 4, 5) เพื่อให้ขอบคมไม่เบลอ
+   ชั้นล่าง .px-base = ตัวละคร/โต๊ะ (หรี่ลงตอนกลางคืน)  ชั้นบน .px-glow = จอโค้ด ควันกาแฟ แสงโคมไฟ (เรืองแสง ไม่หรี่) */
+
+.dev-wrap { --px: 4; position: relative; width: calc(var(--px) * 96px); max-width: 100%; margin-inline: auto; }
+.dev-scene {
+  position: relative; display: block;
+  width: 100%; height: calc(var(--px) * 86px);
+  padding: 0; background: none; border: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.dev-scene:focus-visible { outline: 2px dashed var(--accent); outline-offset: 6px; border-radius: 8px; }
+.dev-stack { position: absolute; inset: 0; }
+.px { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; shape-rendering: crispEdges; }
+.px-glow { pointer-events: none; }
+/* กลางคืนตัวละครหรี่ลงตามค่า --night (ค่อยๆ หรี่ตอนสลับธีม) ส่วนแสงจากจอ/โคมไฟยังสว่างอยู่ */
+.px-base { filter: brightness(calc(1 - 0.28 * var(--night))) saturate(calc(1 - 0.05 * var(--night))); }
+
+/* เสื้อฮู้ดใช้สีหลักของเว็บ จึงเปลี่ยนตามธีมเอง */
+.hood { fill: var(--accent); }
+.hoodL { fill: color-mix(in srgb, var(--accent) 76%, #fff); }
+.hoodD { fill: color-mix(in srgb, var(--accent) 70%, #000); }
+.hoodDD { fill: color-mix(in srgb, var(--accent) 52%, #000); }
+.floor { fill: rgba(0, 0, 0, 0.2); }
+/* สีควัน: กลางวันเทาอมม่วง กลางคืนขาว (ค่อยๆ เปลี่ยนตาม --night) */
+.steamc { fill: color-mix(in srgb, #dde1ff calc(var(--night) * 100%), #98a1d6); }
+
+/* --- แอนิเมชันแบบพิกเซล: ใช้ steps() ให้ขยับทีละช่องเหมือนเกมเก่า ไม่ลื่นไหลแบบเวกเตอร์ --- */
+
+/* หัวขยับขึ้นลง 1 พิกเซลเหมือนหายใจ */
+.head-g { animation: headBob 3.2s steps(1) infinite; }
+@keyframes headBob { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+
+/* กะพริบตาเป็นช่วงๆ: สลับระหว่างภาพตาลืมกับตาหลับ */
+.eye-open { animation: eyeOpen 4.6s steps(1) infinite; }
+.eye-closed { opacity: 0; animation: eyeClosed 4.6s steps(1) infinite; }
+@keyframes eyeOpen { 0% { opacity: 1; } 93% { opacity: 0; } 96% { opacity: 1; } }
+@keyframes eyeClosed { 0% { opacity: 0; } 93% { opacity: 1; } 96% { opacity: 0; } }
+
+/* มือสองข้างพิมพ์คีย์บอร์ด: ขยับทีละ 1 พิกเซล จังหวะไม่ตรงกันเหมือนพิมพ์จริง */
+.fore-near { animation: typeA 0.48s steps(1) infinite; }
+.fore-far { animation: typeB 0.6s steps(1) infinite -0.22s; }
+@keyframes typeA {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(1px, -1px); }
+  50% { transform: translate(0, 0); }
+  75% { transform: translate(1px, 0); }
+}
+@keyframes typeB {
+  0% { transform: translate(0, -1px); }
+  33% { transform: translate(0, 0); }
+  66% { transform: translate(-1px, -1px); }
+}
+
+/* โค้ดบนจอ: แต่ละช่วงค่อยๆ ยาวขึ้นทีละพิกเซล (--w = ความกว้าง, --d = หน่วงเวลา) แล้วจางหายและเริ่มใหม่ */
+.cl {
+  transform-box: fill-box; transform-origin: 0 50%;
+  animation: typeLine 8s steps(var(--w)) infinite backwards;
+  animation-delay: calc(var(--d) * 1s);
+}
+@keyframes typeLine {
+  0% { transform: scaleX(0); opacity: 1; }
+  12% { transform: scaleX(1); opacity: 1; }
+  88% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+/* ควันกาแฟ: ลอยขึ้นทีละพิกเซล พร้อมส่ายซ้ายขวา และจางหายไป */
+.steam { animation: steamRise 2.4s steps(6) infinite backwards; animation-delay: calc(var(--sd) * 1s); }
+@keyframes steamRise {
+  0% { transform: translateY(0); opacity: 0; }
+  14% { opacity: 1; }
+  70% { opacity: 0.9; }
+  100% { transform: translateY(-6px); opacity: 0; }
+}
+.sway { animation: sway 1.3s steps(1) infinite; animation-delay: calc(var(--sd) * 1s); }
+@keyframes sway { 0% { transform: translateX(0); } 50% { transform: translateX(1px); } }
+
+/* แสงจากจอและโคมไฟ: ค่อยๆ เรืองขึ้นตามความมืด (--night)
+   mix-blend-mode: screen = บวกแสงเข้าไปเหมือนแสงจริง ไม่ทำให้ของข้างหลังขุ่นเป็นสีเทา */
+.halo1 { opacity: calc(clamp(0, (var(--night) - 0.4) * 2, 1) * 0.34); mix-blend-mode: screen; }
+.halo2 { opacity: calc(clamp(0, (var(--night) - 0.4) * 2, 1) * 0.16); mix-blend-mode: screen; }
+.lg { mix-blend-mode: screen; --lit: clamp(0, (var(--night) - 0.45) * 2.2, 1); }
+.lg0 { opacity: calc(var(--lit) * 0.55); }
+.lg1 { opacity: calc(var(--lit) * 0.30); }
+.lg2 { opacity: calc(var(--lit) * 0.17); }
+.lg3 { opacity: calc(var(--lit) * 0.09); }
+.pool1 { opacity: calc(var(--lit) * 0.42); }
+.pool2 { opacity: calc(var(--lit) * 0.22); }
+.bulb { opacity: clamp(0, (var(--night) - 0.45) * 2.2, 1); }
+
+/* กดแล้วตัวกระโดดทีละช่อง (หน่วย = พิกเซลศิลป์) */
+.dev-scene.hop .dev-stack { animation: hop 0.5s steps(1); }
+@keyframes hop {
+  0% { transform: translateY(0); }
+  15% { transform: translateY(calc(var(--px) * -3px)); }
+  35% { transform: translateY(calc(var(--px) * -5px)); }
+  55% { transform: translateY(calc(var(--px) * -3px)); }
+  75% { transform: translateY(calc(var(--px) * -1px)); }
+  100% { transform: translateY(0); }
+}
+
+/* ---------- สองท่าทางตามเวลา ----------
+   กลางวัน = นั่งพิมพ์งาน + หยุดหยิบกาแฟดื่มเป็นระยะ (คลาส pd)
+   กลางคืน = นอนฟุบโต๊ะ มี Zzz ลอย (คลาส pn)
+   --od / --on คือความโปร่งใสของแต่ละท่า คำนวณจาก --night: สลับท่าตอนผ่านช่วงพลบค่ำ (night ≈ 0.5) ใช้เวลาสั้นๆ แบบเกมพิกเซล */
+.dev-wrap {
+  --od: clamp(0, (0.5 - var(--night)) * 20, 1);
+  --on: clamp(0, (var(--night) - 0.5) * 20, 1);
+}
+.pd { opacity: var(--od); }
+.pn { opacity: var(--on); }
+
+/* จังหวะวนรอบละ 14 วินาที: พิมพ์ 0-56% → ยื่นมือไปจับแก้ว → ยกแก้ว → จิบ (64-80%) → วางแก้ว → กลับมาพิมพ์
+   ทุกอันใช้ steps(1) = สลับเฟรมทีละภาพเหมือนแอนิเมชันพิกเซล */
+.seq-type, .seq-reach, .seq-carry, .seq-sip, .seq-mug, .sip-tilt { animation-duration: 14s; animation-timing-function: steps(1); animation-iteration-count: infinite; }
+.seq-type  { animation-name: seqType; }
+.seq-reach { opacity: 0; animation-name: seqReach; }
+.seq-carry { opacity: 0; animation-name: seqCarry; }
+.seq-sip   { opacity: 0; animation-name: seqSip; }
+.seq-mug   { animation-name: seqMug; }
+.sip-tilt  { animation-name: sipTilt; }
+@keyframes seqType  { 0% { opacity: 1; } 56% { opacity: 0; } 88% { opacity: 1; } }
+@keyframes seqReach { 0% { opacity: 0; } 56% { opacity: 1; } 60% { opacity: 0; } 84% { opacity: 1; } 88% { opacity: 0; } }
+@keyframes seqCarry { 0% { opacity: 0; } 60% { opacity: 1; } 64% { opacity: 0; } 80% { opacity: 1; } 84% { opacity: 0; } }
+@keyframes seqSip   { 0% { opacity: 0; } 64% { opacity: 1; } 80% { opacity: 0; } }
+@keyframes seqMug   { 0% { opacity: 1; } 60% { opacity: 0; } 84% { opacity: 1; } }   /* แก้วบนโต๊ะ/ควัน หายไปตอนถูกหยิบ */
+@keyframes sipTilt  { 0% { transform: none; } 69% { transform: translateY(-1px); } 73% { transform: none; } 75% { transform: translateY(-1px); } 78% { transform: none; } }
+
+/* ท่านอน: หายใจเข้าออก (หัวยกขึ้น 1 พิกเซลสลับกัน) + Zzz ลอยขึ้นทีละพิกเซล + เคอร์เซอร์บนจอกะพริบ */
+.s-head { animation: breathe 3s steps(1) infinite; }
+@keyframes breathe { 0% { transform: translateY(0); } 50% { transform: translateY(1px); } }
+.zz { animation: zFloat 4.2s steps(7) infinite backwards; animation-delay: calc(var(--zd) * 1s); }
+@keyframes zFloat {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: translate(4px, -7px); opacity: 0; }
+}
+.cur { animation: curBlink 1.1s steps(1) infinite; }
+@keyframes curBlink { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+
+/* ---------- กล่องคำพูดตอนกดที่นักพัฒนา ---------- */
+/* กล่องคำพูดอยู่เหนือหัวตัวละคร (เส้นล่างของกล่อง = แถวที่ 18 ของสไปรต์) และหางชี้ลงที่หัว (กึ่งกลางหัว ~แถวที่ 27 ในแนวนอน) */
+.dev-bubble {
+  --tail-x: calc(var(--px) * -21px);
+  position: absolute; left: 50%; top: calc(var(--px) * 18px); z-index: 2;
+  width: max-content; max-width: min(320px, 100%);   /* max-content = กว้างตามข้อความ ไม่ถูกบีบ */
+  padding: 10px 18px;
+  font-weight: 600; font-size: 0.92rem; line-height: 1.5; text-align: center;
+  text-wrap: balance;                                /* ถ้าต้องขึ้นบรรทัดใหม่ ให้แบ่งยาวเท่ากัน ไม่ทิ้งคำเดียวโดดๆ */
+  color: var(--bg); background: var(--text);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, calc(-100% + 10px)) scale(0.92);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.dev-bubble.show { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+.dev-bubble::after {   /* หางกล่องคำพูด */
+  content: ""; position: absolute; left: calc(50% + var(--tail-x)); bottom: -6px;
+  width: 14px; height: 14px;
+  background: inherit; border-radius: 3px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* คำใบ้ว่ากดได้ */
+.dev-hint { text-align: center; margin-top: 4px; font-size: 0.85rem; color: var(--text-soft); animation: hint 2.6s ease-in-out infinite; transition: opacity 0.4s; }
+.dev-hint.gone { opacity: 0; animation: none; }
+@keyframes hint { 50% { opacity: 0.45; } }
+
+/* ขนาดสไปรต์ (1 พิกเซลศิลป์ = --px พิกเซลจริง ใช้จำนวนเต็มเสมอเพื่อให้ขอบคม) */
+@media (min-width: 1500px) { .dev-wrap { --px: 5; } }
+@media (max-width: 1100px) { .dev-wrap { --px: 3; } }
+@media (max-width: 900px)  { .dev-wrap { --px: 4; } }   /* จอแคบ: เลย์เอาต์ซ้อนกัน มีที่กว้างพอ */
+@media (max-width: 560px)  { .dev-wrap { --px: 3; } }
+@media (max-width: 339px)  { .dev-wrap { --px: 2; } }
+
+
+@media (max-width: 900px) {
+  /* จอเล็ก: ดวงอาทิตย์/พระจันทร์เล็กลงและชิดมุม ไม่ให้ทับข้อความ เมฆจางลงและเหลือน้อยลงให้อ่านง่าย */
+  .sun, .moon { right: 5%; top: calc(var(--nav-h) + 10px); width: 50px; height: 50px; }
+  .sun { box-shadow: 0 0 36px 12px var(--sun-glow); }
+  .moon { box-shadow: 0 0 30px 8px rgba(160, 160, 255, 0.3); }
+  .moon::before { width: 9px; height: 9px; left: 10px; top: 26px; }
+  .moon::after { width: 6px; height: 6px; left: 30px; top: 12px; }
+  .cloud { --cloud-o: 0.55; }
+  .cloud-2 { display: none; }
+}
+
+
+/* ---------- 10. Responsive ---------- */
+
+/* แท็บเล็ต */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; text-align: center; }
+  .hero-desc { margin: 0 auto; }
+  .hero-buttons { justify-content: center; }
+  .hero-card { margin-top: 4px; }   /* จอเล็ก: ฉากนักพัฒนาย้ายลงมาอยู่ใต้ข้อความ */
+  .about-grid { grid-template-columns: 1fr; }
+}
+
+/* มือถือ */
+@media (max-width: 720px) {
+  .menu-btn { display: flex; }
+
+  /* เมนูกลายเป็นแผงเลื่อนลงมาจาก navbar */
+  .nav-links {
+    position: absolute; top: var(--nav-h); left: 0; right: 0;
+    flex-direction: column; align-items: center; gap: 0;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--card-border);
+    max-height: 0; overflow: hidden;            /* ปิดอยู่ = สูง 0 */
+    transition: max-height 0.4s ease;
+  }
+  .nav-links.open { max-height: 380px; }        /* เปิด = ขยายความสูง */
+  .nav-links a { width: 100%; text-align: center; padding: 16px 0; }
+
+  .section { padding: 70px 20px; }
+  .theme-toggle #themeLabel { display: none; }  /* โชว์แค่ไอคอนให้ประหยัดที่ */
+}
+
+/* จอสัมผัส: ปิดวงแสงตามเมาส์ (ไม่มีเมาส์ให้ตาม) */
+@media (hover: none) {
+  .cursor-glow { display: none; }
+}
+
+/* ผู้ใช้ที่ตั้งค่าระบบให้ลดการเคลื่อนไหว: ปิดแอนิเมชันทั้งหมดเพื่อความสบายตา */
+@media (prefers-reduced-motion: reduce) {
+  /* ยกเว้นนักพัฒนาพิกเซล (.dev-scene): ขยับทีละพิกเซลเล็กๆ ไม่มีการพุ่งหรือเลื่อนกว้าง จึงปล่อยให้ทำงานต่อ ส่วนอย่างอื่นปิดหมด */
+  *:not(.dev-scene, .dev-scene *), *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  /* ยกเว้นการสลับธีม: ให้ฟ้า/ไฟเมืองค่อยๆ เปลี่ยนต่อไป (เป็นการเปลี่ยนสีนุ่มๆ ครั้งเดียว ไม่ใช่การเคลื่อนไหวซ้ำๆ) */
+  :root { transition: --night var(--theme-dur) var(--theme-ease) !important; }
+}
+
+/* ---------- ฟอร์มติดต่อ ---------- */
+.contact-form { max-width: 640px; margin: 36px auto 0; text-align: left; display: grid; gap: 16px; }
+.contact-form h3 { font-size: 1.15rem; text-align: center; margin-bottom: 4px; }
+.cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.contact-form label { display: grid; gap: 6px; font-size: 0.88rem; font-weight: 600; color: var(--text-soft); }
+.contact-form input, .contact-form textarea {
+  width: 100%; padding: 12px 14px; font: inherit; font-weight: 400; color: var(--text);
+  background: var(--bg); border: 1.5px solid var(--card-border); border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.contact-form textarea { resize: vertical; min-height: 120px; }
+.contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.contact-form .btn { justify-self: center; cursor: pointer; border: none; }
+.contact-form .btn:disabled { opacity: 0.6; cursor: wait; }
+.cf-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }   /* ช่องดักบอท ซ่อนจากคนจริง */
+.cf-status { min-height: 1.4em; text-align: center; font-size: 0.92rem; }
+.cf-status.ok { color: #14b8a6; }
+.cf-status.err { color: #f43f5e; }
+@media (max-width: 600px) { .cf-row { grid-template-columns: 1fr; } }
